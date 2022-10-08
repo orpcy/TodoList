@@ -9,6 +9,7 @@
     "axios": "^0.27.2",
     "bootstrap": "^5.2.0",
     "react": "^18.2.0",
+    "react-app-rewired": "^2.2.1",
     "react-bootstrap": "^2.5.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.3.0",
@@ -40,7 +41,6 @@
   "author": "orpcy",
   "license": "ISC",
   "devDependencies": {
-    "react-app-rewired": "^2.2.1",
     "uninstall": "0.0.0"
   }
 }
