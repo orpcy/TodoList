@@ -93,7 +93,6 @@ const App = () => {
   }, [showRegister, showLogin]);
 
   const dayTime = new Date().getHours();
-  console.log(dayTime);
 
   return (
     <div className="App">
