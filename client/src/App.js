@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ToDoForm from "./Components/ToDoForm.js";
 import ToDoList from "./Components/ToDoList.js";
+import { ToastContainer, toast } from "react-toastify";
 import { createUser, fetchTodo, login } from "./Utils/helpers.js";
+
+import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
 import LoginModal from "./Utils/LoginModal.js";
@@ -43,7 +46,9 @@ const App = () => {
   const register = (e) => {
     e.preventDefault();
     createUser(inputs).then((resp) => {
+      if (resp.error) toast.error(resp.error);
       if (resp._id) {
+        toast.success("Registration successful!");
         localStorage.setItem("userId", resp._id);
         localStorage.setItem("username", resp.username);
         setInputs({ username: "", email: "", password: "" });
@@ -56,8 +61,9 @@ const App = () => {
   const loginUser = (e) => {
     e.preventDefault();
     login(inputs).then((resp) => {
-      if (resp.error) alert(resp.error);
+      if (resp.error) toast.error(resp.error);
       if (resp._id) {
+        toast.success("Logged in successfully!");
         localStorage.setItem("userId", resp._id);
         localStorage.setItem("username", resp.username);
         fetchTodo(resp._id).then((todoItems) => setTodos(todoItems));
@@ -96,6 +102,7 @@ const App = () => {
 
   return (
     <div className="App">
+      <ToastContainer draggable autoClose={2000} icon={true} />
       <header>
         <nav>
           <h4>
