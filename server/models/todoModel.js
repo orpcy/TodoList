@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
 
-const todoModel = mongoose.Schema({
+const todoModel = Schema({
+  userId: { type: Schema.Types.ObjectId, ref: "User" },
   task: {
     type: String,
     required: true,
@@ -9,6 +11,10 @@ const todoModel = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model("todo", todoModel);
+module.exports = model("Todo", todoModel);

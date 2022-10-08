@@ -11,8 +11,9 @@ module.exports.addToDo = (req, res) => {
   });
 };
 
-module.exports.getAllToDo = (req, res) => {
-  ToDo.find({}, (error, data) => {
+module.exports.getUserTodos = (req, res) => {
+  const { _id } = req.params;
+  ToDo.find({ userId: _id }, (error, data) => {
     apiCallback(error, data, res);
   });
 };

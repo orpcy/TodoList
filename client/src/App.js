@@ -1,83 +1,155 @@
 import React, { useEffect, useState } from "react";
 import ToDoForm from "./Components/ToDoForm.js";
 import ToDoList from "./Components/ToDoList.js";
+import { createUser, fetchTodo, login } from "./Utils/helpers.js";
 
 import "./App.css";
+import LoginModal from "./Utils/LoginModal.js";
+import RegisterModal from "./Utils/RegisterModal.js";
+import _default from "react-bootstrap/esm/CardGroup.js";
 
 const App = () => {
   const [todos, setTodos] = useState([]);
 
-  let url;
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
 
-  let dbUrl = process.env.REACT_APP_API_URL;
-  if (dbUrl) {
-    url = dbUrl;
-  } else {
-    url = "";
-  }
+  const handleCloseLogin = () => setShowLogin(false);
+  const handleShowLogin = () => setShowLogin(true);
 
-  const fetchTodo = async () => {
-    const response = await fetch(`${url}/todo`);
-    const todoItems = await response.json();
-    return todoItems;
+  const handleCloseRegister = () => setShowRegister(false);
+  const handleShowRegister = () => setShowRegister(true);
+
+  const [emmptyText, setEmptyText] = useState(true);
+
+  const [inputs, setInputs] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (evt) => {
+    const value = evt.target.value;
+    setInputs({
+      ...inputs,
+      [evt.target.name]: value,
+    });
+  };
+
+  const [displayName, setDisplayName] = useState("");
+
+  const { username, email, password } = inputs;
+
+  const register = (e) => {
+    e.preventDefault();
+    createUser(inputs).then((resp) => {
+      if (resp._id) {
+        localStorage.setItem("userId", resp._id);
+        localStorage.setItem("username", resp.username);
+        setInputs({ username: "", email: "", password: "" });
+        setEmptyText(false);
+        handleCloseRegister();
+      }
+    });
+  };
+
+  const loginUser = (e) => {
+    e.preventDefault();
+    login(inputs).then((resp) => {
+      if (resp.error) alert(resp.error);
+      if (resp._id) {
+        localStorage.setItem("userId", resp._id);
+        localStorage.setItem("username", resp.username);
+        fetchTodo(resp._id).then((todoItems) => setTodos(todoItems));
+        setInputs({ email: "", password: "" });
+        setEmptyText(false);
+        handleCloseLogin();
+      }
+    });
+  };
+
+  const logout = () => {
+    setDisplayName("");
+    setTodos([]);
+    setEmptyText(true);
+    localStorage.clear();
   };
 
   useEffect(() => {
-    fetchTodo().then((todoItems) => setTodos(todoItems));
+    const getId = localStorage.getItem("userId");
+    if (getId)
+      fetchTodo(getId).then((todoItems) => {
+        setTodos(todoItems);
+        setEmptyText(false);
+      });
   }, []);
 
-  const addTodo = (task) => {
-    fetch(`${url}/todo`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ task }),
-    })
-      .then((res) => res.json())
-      .then((resp) => setTodos([...todos, resp]));
-  };
+  useEffect(() => {
+    const getUsername = localStorage.getItem("username");
+    if (getUsername) {
+      setDisplayName(localStorage.getItem("username"));
+      setEmptyText(false);
+    }
+  }, [showRegister, showLogin]);
 
-  const markAsComplete = (_id) => {
-    fetch(`${url}/todo/${_id}`, {
-      method: "PUT",
-    })
-      .then((res) => res.json())
-      .then((updated) => {
-        let newTodo = [...todos];
-        newTodo = newTodo.map((n) => {
-          if (n._id === _id) {
-            if (n.completed) {
-              n.completed = false;
-            } else {
-              n.completed = true;
-            }
-          }
-          return n;
-        });
-
-        setTodos(newTodo);
-      });
-  };
-
-  const handleDelete = (_id) => {
-    fetch(`${url}/todo/${_id}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then((deleted) => {
-        let newTodo = todos.filter((t) => t._id !== _id);
-        setTodos(newTodo);
-      });
-  };
+  const dayTime = new Date().getHours();
+  console.log(dayTime);
 
   return (
     <div className="App">
-      <ToDoForm addTodo={addTodo} />
-      <ToDoList
-        markAsComplete={markAsComplete}
-        todos={todos}
-        handleDelete={handleDelete}
+      <header>
+        <nav>
+          <h4>
+            {displayName !== "" ? (
+              <span>
+                Hi {displayName}.{" "}
+                {dayTime < 12
+                  ? "Good Morning!"
+                  : dayTime > 12
+                  ? "Good Afternoon!"
+                  : dayTime > 18
+                  ? "Good Evening!"
+                  : null}
+              </span>
+            ) : (
+              <span>Hi Anonymous.</span>
+            )}
+          </h4>
+          <div />
+          <div>
+            {displayName != "" ? (
+              <span onClick={logout}>Logout</span>
+            ) : (
+              <>
+                <span onClick={handleShowLogin}>Login</span>
+                <span onClick={handleShowRegister}>Register</span>
+              </>
+            )}
+          </div>
+        </nav>
+      </header>
+      <main>
+        <ToDoForm todos={todos} setTodos={setTodos} />
+        <ToDoList todos={todos} setTodos={setTodos} />
+        {emmptyText && <p className="text-info">Sign in to manage tasks!</p>}
+      </main>
+
+      <LoginModal
+        show={showLogin}
+        handleClose={handleCloseLogin}
+        email={email}
+        password={password}
+        handleChange={handleChange}
+        loginUser={loginUser}
+      />
+      <RegisterModal
+        show={showRegister}
+        handleClose={handleCloseRegister}
+        username={username}
+        email={email}
+        password={password}
+        handleChange={handleChange}
+        register={register}
       />
     </div>
   );
