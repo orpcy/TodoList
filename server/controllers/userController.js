@@ -6,8 +6,12 @@ const apiCallback = (error, data, res) => {
 };
 
 module.exports.addUser = (req, res) => {
-  User.create(req.body, (error, data) => {
-    apiCallback(error, data, res);
+  User.create(req.body, (err, data) => {
+    if (err) {
+      res.json({ error: "Email already exists!" });
+    } else {
+      res.json(data);
+    }
   });
 };
 
