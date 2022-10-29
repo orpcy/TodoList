@@ -102,7 +102,11 @@ const App = () => {
 
   return (
     <div className="App">
-      <ToastContainer draggable autoClose={2000} icon={true} />
+      <ToastContainer
+        draggable
+        autoClose={2000}
+        icon={true}
+      />
       <header>
         <nav>
           <h4>

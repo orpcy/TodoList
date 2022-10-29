@@ -1,10 +1,5 @@
 const User = require("../models/userModel");
 
-const apiCallback = (error, data, res) => {
-  if (error) res.json({ err: "error occured", error });
-  res.json(data);
-};
-
 module.exports.addUser = (req, res) => {
   User.create(req.body, (err, data) => {
     if (err) {
